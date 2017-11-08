@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>YADA - Yet Another To-Do Application</title>
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css"/>
+</head>
+<body>
+    <header><h1 class="ui header">To-Do's</h1></header>
+    <main class="row">
+        <table class="ui orange celled table">
+            <thead>
+                <tr><th class="ten wide">To-Do</th><th class="two wide">Completed</th><th class="four wide"></th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="todo : ${todos}">
+                    <td th:text="${todo.todo}">To Do #1</td>
+                    <td>
+                        <div class="ui read-only checkbox">
+                            <input type="checkbox" th:checked="${todo.completed}">
+                            <label>&nbsp;</label>
+                        </div>
+                    </td>
+                    <td>
+                        <form th:action="@{/todos/{id}/completed(id=${todo.id})}" th:if="${!todo.completed}" method="POST">
+                            <button class="ui orange button">Completed</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div>
+            <h2 class="ui header">New To-Do</h2>
+            <form th:action="@{/todos}" method="POST">
+                <div class="ui input">
+                    <input type="text" class="ui text" name="todo">
+                </div>
+                <div>
+                <button class="ui orange button">Save</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>
