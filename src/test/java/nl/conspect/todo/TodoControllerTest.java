@@ -1,34 +1,50 @@
 package nl.conspect.todo;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.reactive.server.WebTestClient;
+import java.net.URLEncoder;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TodoApplication.TodoConfiguration.class)
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+
+import reactor.test.StepVerifier;
+
 class TodoControllerTest {
 
-    @Autowired
-    private ApplicationContext ctx;
+    @Test
+    void getSingleElement() {
 
-    private WebTestClient testClient;
+        InMemoryTodoRepository repository = new InMemoryTodoRepository();
+        TodoController controller = new TodoController(repository);
 
-    @BeforeEach
-    public void setup() {
-        testClient = WebTestClient.bindToApplicationContext(ctx).configureClient().baseUrl("/todos").build();
+        Todo todo = new Todo("Write succeeding test.");
+        repository.save(todo);
+
+        StepVerifier.create(controller.get(todo.getId()))
+                .expectNext(todo)
+                .expectComplete().verify();
     }
 
     @Test
-    void index() {
+    void postNewTodo() throws Exception {
 
-        testClient.get().exchange()
-                .expectStatus().isOk()
-                .expectBody();
+        InMemoryTodoRepository repository = new InMemoryTodoRepository();
+        TodoController controller = new TodoController(repository);
+
+        String todo = URLEncoder.encode("Write Succeeding POST test.", "UTF-8");
+
+        MockServerHttpRequest request = MockServerHttpRequest.post("/todos")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body("todo=" + todo);
+
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        StepVerifier.create(controller.create(exchange))
+                .expectNext("redirect:/todos")
+                .expectComplete().verify();
+
+        StepVerifier.create(repository.findAll().count()).expectNext(1L).verifyComplete();
     }
+
 
 }
