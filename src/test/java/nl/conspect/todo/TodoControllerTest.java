@@ -43,7 +43,8 @@ class TodoControllerTest {
                 .expectNext("redirect:/todos")
                 .expectComplete().verify();
 
-        StepVerifier.create(repository.findAll().count()).expectNext(1L).verifyComplete();
+        StepVerifier.create(repository.findAll().count())
+                .expectNext(1L).verifyComplete();
     }
 
 
